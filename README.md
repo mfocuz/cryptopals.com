@@ -1,2 +1,2 @@
 # cryptopals.com writeup
-Perl code writeup for cryptopasl.com
+Perl code writeups for cryptopasl.com, cryptography challenge and learning portal.
