@@ -6,10 +6,11 @@ use strict;
 
 # Detect if we are included
 if (!caller) {
-    require './task1.hex_to_base64.pl';
-    require './task2.fixed_xor.pl';
-    require './task3.single_byte_xor.pl';
-    require './task4.detect_single_byte_xor.pl';
+    my ($PATH,$SCRIPTNAME) = $0 =~ /(.*)\/(.*\.pl)$/;
+    require "$PATH/task01.hex_to_base64.pl";
+    require "$PATH/task02.fixed_xor.pl";
+    require "$PATH/task03.single_byte_xor.pl";
+    require "$PATH/task04.detect_single_byte_xor.pl";
     
     my $file = $ARGV[0];
     
@@ -17,7 +18,8 @@ if (!caller) {
     my $testString1 = "this is a test";
     my $testString2 = "wokka wokka!!!";
     my $hd = hamming_distance($testString1,$testString2);
-    print "Is hamming distance is 37? Current = $hd\n";
+    #print "Is hamming distance is 37? Current = $hd\n";
+    print 'fail' if ($hd != 37);
     
     # Open file and read whole to buffer
     open(my $fh, '<', $file) or die "Can not open file: $file\n";
@@ -36,6 +38,8 @@ if (!caller) {
     # Let KEYSIZE be the guessed length of the key; try values from 2 to (say) 40
     # Save hamming distances to:
     my %hdHash;
+    
+    my $ptResult;
     # in bytes:
     foreach (1..40) {
         # in bits:
@@ -86,8 +90,14 @@ if (!caller) {
             $keyCandidate .= break_single_byte_xor_with_space($transposedBlock);
         }
         
-        print pack('H*',rox($encryptedDataHex,expand_key($keyCandidate,(length $encryptedDataHex)/2)));
+        #print pack('H*',rox($encryptedDataHex,expand_key($keyCandidate,(length $encryptedDataHex)/2)));
+        $ptResult = pack('H*',rox($encryptedDataHex,expand_key($keyCandidate,(length $encryptedDataHex)/2)));
     }
+    
+    # TEST
+    my $correctKey = "5465726d696e61746f7220583a204272696e6720746865206e6f697365";
+    my $correctMessage = pack('H*',rox($encryptedDataHex,expand_key($correctKey,(length $encryptedDataHex)/2)));
+    ($ptResult eq $correctMessage) ? print 'correct' : print 'fail';
 }
 
 # Function for breaking single byte XOR encryption for encrypted English text (based on counting space in text)

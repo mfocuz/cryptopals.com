@@ -4,18 +4,19 @@ use strict;
 
 # Task 3: Single-byte XOR cipher
 
-use Text::Ngrams;
-
 # Detect if we are included or not
-if (!caller) {    
-    require './task2.fixed_xor.pl';
+if (!caller) {
+    my ($PATH,$SCRIPTNAME) = $0 =~ /(.*)\/(.*\.pl)$/;
+    require "$PATH/task02.fixed_xor.pl";
     
     my $input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     my $inputLength = (length $input) / 2;
 
     my $keys = break_single_byte_xor_with_letterfreq($input);
     
-    map {print pack('H*',rox($input,expand_key(sprintf('%.2x',$_),$inputLength)))."key: $_\n"} @$keys;
+    my @pt = map {pack('H*',rox($input,expand_key(sprintf('%.2x',$_),$inputLength)))."key: $_\n"} @$keys;
+    my @result = grep {m/Cooking MC's like a pound of baconkey/} @pt;
+    (scalar @result !=0) ? print 'correct' : print 'fail';
 }
 
 # Function for breaking single byte XOR encryption for encrypted English text (based on English letter frequency)
@@ -49,18 +50,15 @@ sub break_single_byte_xor_with_letterfreq {
     
     # Get keys with min value and decrypt message with it
     my @keys = grep {$dispTable{$_} eq $minValue} keys %dispTable;
-    return \@keys;
-    #map {print pack('H*',rox($input,expand_key(sprintf('%.2x',$_),$inputLength)))."key: $_\n"} @keys;
-    
+    return \@keys;    
 }
 
 # Function for expanding key to message length for stream cipher
-# Input: key in hex string,length to expand, usually its a message(whic should be encrypted) length
+# Input: key in hex string,length to expand, usually its a message(which should be encrypted) length
 sub expand_key {
     my $key = shift;
     my $length = shift;
 
-    #$key =  sprintf('%.2x',$key) if (bytes::length($key) == 1);
     my $resultKey = "";
     while (1) {
         # Check current result key length

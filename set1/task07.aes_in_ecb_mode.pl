@@ -7,7 +7,8 @@ use Crypt::OpenSSL::AES;
 
 # Detect if we are included
 if (!caller) {
-    require './task1.hex_to_base64.pl';
+    my ($PATH,$SCRIPTNAME) = $0 =~ /(.*)\/(.*\.pl)$/;
+    require "$PATH/task01.hex_to_base64.pl";
     my $file = $ARGV[0];
 
     my $key = "YELLOW SUBMARINE";
@@ -24,16 +25,18 @@ if (!caller) {
 
     # AES ECB Decrypt
     my $pt = ecb_decrypt($encryptedData,$key);
-    print "$pt\n";
+    #print "$pt\n";
     
     # Test ECB encryption function, encrypt result and decrypt again
-    my $testEncryption = ecb_encrypt($pt,$key);
+    my $testEncryption = ecb_encrypt($pt."AAAA",$key);
     my $testResult = ecb_decrypt($testEncryption,$key);
-    (($pt ^ $testResult) == 0) ? print "Test success" : print "Test failed";
+    #print "\n\nDecrypted text after ecb_ecnrypt function\n\n$testResult\n";
+    ($testResult eq $pt."AAAA") ? print 'correct' : print 'Fail';
 }
 
 # AES ECB encryption func
-# Input: PT, key
+# 1) Plain Text as ASCII
+# 2) Key as ASCII
 sub ecb_encrypt {
     my $pt = shift;
     my $key = shift;
@@ -49,14 +52,26 @@ sub ecb_encrypt {
         $ct .= $cipher->encrypt(pack('H*',$pt[$i]));
     }
     
-    # Add padding to last block if required and encrypt
-    my $lastBlock = $cipher->encrypt(pack('H*',add_pad($pt[$#pt])));
+    # Check if last block less than AES block size
+    my $lastBlock;
+    if (length $pt[$#pt] < 16 * 2 ) {
+        # Add padding to last block and encrypt
+        $lastBlock = $cipher->encrypt(add_pad(pack('H*',$pt[$#pt]),16));
+    } elsif (length $pt[$#pt] == 16 * 2) {
+        # Encrypt last block, then add empty block with 0x10 x16 bytes padding
+        $lastBlock = $cipher->encrypt(pack('H*',$pt[$#pt]));
+        $lastBlock .= $cipher->encrypt(pack('H*',"10" x 16));
+    } else {
+        die "Fatal error!\n";
+    }
     
     return $ct.$lastBlock;
 }
 
 # AES ECB decryption func
-# Input: CT, key
+# Input:
+# 1) Cipher Text as byte array (string)
+# 2) Key
 sub ecb_decrypt {
     my $ct = shift;
     my $key = shift;
@@ -80,27 +95,31 @@ sub ecb_decrypt {
     return $pt.$lastBlockUnpad;
 }
 
-# Add padding bytes to block(required when encrypt)
-# Input: block as HEX string
+# Add PKCS#7 padding bytes to block(required when encrypt)
+# Input:
+# 1) block as byte array
+# 2) block length in bytes to fullfill
 sub add_pad {
     my $block = shift;
+    my $blockLen = shift;
     
-    my $pad = 32 - (length $block);  
-    return if ($pad == 0);
+    my $pad = $blockLen - (length $block);
+    # If pad = 0, that means we have to add additional padded block with 0x16 x 16
+    return $block if ($pad == 0);
     
     my $padding;
-    $padding = sprintf("%.2x",hex($pad/2)) x ($pad/2);
+    $padding = sprintf("%.2x",hex($pad)) x ($pad);
     
-    return $block.$padding;
+    return $block.pack('H*',$padding);
 }
 
 # Remove padding bytes from block(required when decrypt)
-# Input: block as HEX string
+# Input: block as byte array
 sub del_pad {
     my $block = shift;
     
     my @block = unpack('(H2)*',$block);
-    my $pad = $block[$#block];
+    my $pad = hex($block[$#block]);
     splice(@block,$#block-$pad+1,$pad);
     return join('',@block);
 }

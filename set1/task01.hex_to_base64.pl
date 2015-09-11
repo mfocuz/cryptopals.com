@@ -13,22 +13,23 @@ my @BASE64MAP = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'
 
 # Detect if we are included
 if (!caller) {
-    # Task 1 sulution here
-    my $file = $ARGV[0];
-    open(my $fh, '<:raw', $file) or die "Can not open file $file\n";
-    my $input;
-    while (1) {
-        read ($fh, my $buff, 1) or last;
-        $input .= $buff;
-    }
+    my $input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
     
     # encode input file
-    my $outputEncoded = base64_encode($input);
-    print "Encoded base64: $outputEncoded\n";
+    my $outputEncoded = base64_encode(pack('H*',$input));
+    #print "Encoded base64: $outputEncoded\n";
     # decode input file
     my $outputDecoded = base64_decode($outputEncoded);
-    print "Decoded base64: $outputDecoded\n";
+    #print "Decoded base64: $outputDecoded\n";
     #print $outputDecoded;
+    
+    # TEST
+    my $correctBase64Encode = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+    
+    if (pack('H*',$input) eq $outputDecoded && $outputEncoded eq $correctBase64Encode) {
+        print 'correct';
+    }
+    
 }
 
 #

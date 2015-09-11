@@ -8,13 +8,14 @@ use List::MoreUtils qw(first_index);
 
 # Detect if we are included
 if (!caller) {
+    my ($PATH,$SCRIPTNAME) = $0 =~ /(.*)\/(.*\.pl)$/;
     
-    require './task3.single_byte_xor.pl';
-    require './task2.fixed_xor.pl';
+    require "$PATH/task03.single_byte_xor.pl";
+    require "$PATH/task02.fixed_xor.pl";
 
     # Read file from 1st param
     my $file = $ARGV[0];
-    open(my $fh, '<', $file) or die "bams\n";
+    open(my $fh, '<', $file) or print "bams\n";
     
     my @strings;
     my $stringIndex = 0;
@@ -51,7 +52,9 @@ if (!caller) {
     my $correctKey = $dispStat{$stringCandidate};
     # Decrypt candidate
     my $finalResult = pack('H*',rox($stringCandidate,expand_key($correctKey,(length $stringCandidate)/2)));
-    print "$finalResult\n";
+    #print "$finalResult\n";
+    my $correctResult = "Now that the party is jumping\n";
+    ($finalResult eq $correctResult) ? print 'correct' : print 'fail';
 }
 
 1;
