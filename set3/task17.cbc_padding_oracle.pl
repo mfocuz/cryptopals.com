@@ -131,7 +131,7 @@ sub second_function {
     ($isPadValid eq 'true') ? return 'true' : return 'false';
 }
 
-
+1;
 
 
 

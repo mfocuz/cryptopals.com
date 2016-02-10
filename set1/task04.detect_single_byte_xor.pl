@@ -57,31 +57,30 @@ if (!caller) {
     ($finalResult eq $correctResult) ? print 'correct' : print 'fail';
 }
 
-1;
-
 # Function for breaking single byte XOR encryption for encrypted English text (based in number of ascii characters in text)
 # Input: Cipher string
-# Return: best key candidate and ascii matches count for this
+# Return: best key candidate byte
 sub break_single_byte_xor_with_ascii {
     my $input = shift;
     my $inputLength = (length $input) / 2;
+    my $regex = shift;
     
     my %asciiStat;
     foreach my $byte (0..255) {
         # Expand single byte key to message length
-        my $key = expand_key($byte,$inputLength);
+        my $key = expand_key(sprintf('%.2x',$byte),$inputLength);
         # Decrypt message
         my $output = pack('H*',rox($input,$key));
-        my $asciiPrintable = calc_printable_ascii($output);
+        my $asciiPrintable = calc_printable_ascii($output,$regex);
         $asciiStat{$byte} = $asciiPrintable if ($asciiPrintable > 0);
     }
     
-    # Sort dispStat by values and print the decrypted message with highest matches
+    # Sort stat by values and print the decrypted message with highest matches
     my @sortedValues = sort {$a <=> $b} values %asciiStat;
     my $maxValue = $sortedValues[$#sortedValues];
     # Return best candidate
     my ($correctKey) = grep {$asciiStat{$_} eq $maxValue} keys %asciiStat;
-    return $correctKey;
+    return sprintf('%.2x',$correctKey);
 }
 
 # Func for calculation printable ascii chars in string, useful for breaking repeating key XOR
@@ -102,6 +101,4 @@ sub calc_printable_ascii {
     return $asciiPrintable;
 }
 
-
-
-
+1;

@@ -1,0 +1,56 @@
+If an Ethernet frame comes up 
+into the Ethernet driver off t
+henetwork, the packet can be p
+assed upwards to either the AR
+P (AddressResolution Protocol)
+ module or to the IP (Internet
+ Protocol) module.The value of
+ the type field in the Etherne
+t frame determines whetherthe 
+Ethernet frame is passed to th
+e ARP or the IP module.If an I
+P packet comes up into IP, the
+ unit of data is passed upward
+sto either TCP or UDP, as dete
+rmined by the value of the pro
+tocolfield in the IP header.If
+ the UDP datagram comes up int
+o UDP, the application message
+ ispassed upwards to the netwo
+rk application based on the va
+lue of theport field in the UD
+P header.  If the TCP message 
+comes up into TCP,the applicat
+ion message is passed upwards 
+to the network applicationbase
+d on the value of the port fie
+ld in the TCP header.The downw
+ards multiplexing is simple to
+ perform because from eachstar
+ting point there is only the o
+ne downward path; each protoco
+lmodule adds its header inform
+ation so the packet can be de-
+multiplexed at the destination
+ computer.Data passing out fro
+m the applications through eit
+her TCP or UDPconverges on the
+ IP module and is sent downwar
+ds through the lowernetwork in
+terface driver.Although intern
+et technology supports many di
+fferent network media,Ethernet
+ is used for all examples in t
+his tutorial because it is the
+most common physical network u
+sed under IP.  The computer in
+ Figure 1has a single Ethernet
+ connection.  The 6-byte Ether
+net address isunique for each 
+interface on an Ethernet and i
+s located at the lowerinterfac
+e of the Ethernet driver.The c
+omputer also has a 4-byte IP a
+ddress.  This address is locat
+edat the lower interface to th
+e IP module.  The IP address m

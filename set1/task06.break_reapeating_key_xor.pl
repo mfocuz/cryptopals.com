@@ -70,22 +70,11 @@ if (!caller) {
 
     # Break cipher text into blocks for each key size candidate
     foreach my $keySizeCandidate (@keySizeCandidates) {
-        my @encDataChunks = unpack("(B$keySizeCandidate)*",$encryptedData);
+        #my @encDataChunks = unpack("(B$keySizeCandidate)*",$encryptedData);
         
-        # Now transpose the blocks: make a block that is the first byte of every block,
-        # and a block that is the second byte of every block, and so on.
-        my @transposedBlocks;
-        for (my $i=1;$i<=$keySizeCandidate;$i+=8) {
-            my $block;
-            foreach (@encDataChunks) {
-                $block .= substr($_,0,8,'');
-            }
-            push @transposedBlocks,$block;
-        }
-        
-        # Solve each block as if it was single-character XOR. You already have code to do this.
+        my $transposedBlocks = transpose_blocks($encryptedData,$keySizeCandidate);
         my $keyCandidate;
-        foreach (@transposedBlocks) {
+        foreach (@$transposedBlocks) {
             my $transposedBlock = pack('B*',$_);
             $keyCandidate .= break_single_byte_xor_with_space($transposedBlock);
         }
@@ -100,6 +89,26 @@ if (!caller) {
     ($ptResult eq $correctMessage) ? print 'correct' : print 'fail';
 }
 
+# Function make a block that is the first byte of every block,
+# and a block that is the second byte of every block, and so on.
+# Return transposed blocks as string of binary
+sub transpose_blocks {
+    my $encryptedData = shift;
+    my $blockSize = shift;
+    
+    my @chunks = unpack("(B$blockSize)*",$encryptedData);
+
+    my @transposedBlocks;
+    for (my $i=1;$i<=$blockSize;$i+=8) {
+        my $block;
+        foreach (@chunks) {
+            $block .= substr($_,0,8,'');
+        }
+        push @transposedBlocks,$block;
+    }
+    return \@transposedBlocks;
+}
+    
 # Function for breaking single byte XOR encryption for encrypted English text (based on counting space in text)
 # Input: Cipher string
 sub break_single_byte_xor_with_space {
@@ -144,3 +153,5 @@ sub hamming_distance {
     
     return $hd;
 }
+
+1;

@@ -20,12 +20,11 @@ if (!caller) {
 sub rox {
     my ($x,$y) = @_;
     
-    if ((length $x) != (length $y)) {
-        die "Values for simple XOR have different length.\n";
-    }
-    
-    my $xhex = pack('H*',$x);
-    my $yhex = pack('H*',$y);
+    # take min length of both x or y, and xor only $length bytes, its required for CTR mode
+    my $length = (length($x) > length($y)) ? length($y): length($x);
+
+    my $xhex = pack('H*',substr($x,0,$length));
+    my $yhex = pack('H*',substr($y,0,$length));
 
     return unpack('H*',$xhex ^ $yhex);
 }
